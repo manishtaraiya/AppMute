@@ -1,0 +1,214 @@
+package com.manishtaraiya.appmute;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+
+    Toolbar toolbar;
+    private static final String TAG = "MainActivity";
+    CardView manualMuteButton;
+    TextView manualMuteText;
+    MySharePreference sharePreference = new MySharePreference();
+    List<ApplicationInfoModel> applicationInfoModels = new ArrayList<>();
+    AppSelectedAdapter adapter;
+    private PackageManager pm;
+    Switch toastSwitch,autoMuteEnableSwitch;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        toolbar = findViewById(R.id.appBar);
+        ImageView appBarImage = toolbar.findViewById(R.id.appBarImage);
+        RequestOptions options = new RequestOptions()
+                .fitCenter();
+        //.placeholder(R.drawable.placeholder)
+        //.error(R.drawable.placeholder);
+        Glide.with(this).load(ContextCompat.getDrawable(this,R.drawable.app_mute_white)).apply(options).into(appBarImage);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("");
+        pm = getPackageManager();
+        setUpUi();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        updateAppList();
+        //boolean state = AppMute.isAccessibilitySettingsOn(this);
+        //Toast.makeText(this,"Accessibility : "+ state,Toast.LENGTH_SHORT).show();
+        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+        changeManualMuteButton(!isManualMute);
+
+        boolean isToastEnable = sharePreference.get_data_boolean(MainActivity.this,Utils.isToastEnableKey);
+        toastSwitch.setChecked(isToastEnable);
+
+
+        boolean isAutoMuteEnabled = sharePreference.get_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
+        boolean isAccessibilityOn = AppMute.isAccessibilitySettingsOn(MainActivity.this);
+        if(isAutoMuteEnabled) {
+            autoMuteEnableSwitch.setChecked(isAccessibilityOn);
+        }else{
+            autoMuteEnableSwitch.setChecked(false);
+        }
+    }
+
+    public void AppSelectionClicked(View view) {
+        startActivity(new Intent(MainActivity.this,AppSelectionActivity.class));
+
+    }
+
+
+    public void manualMuteClicked(View view) {
+        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+        changeManualMuteButton(isManualMute);
+        new SetMasterMute().setMasterMute(isManualMute,this);
+    }
+
+    private void changeManualMuteButton(boolean status) {
+        if(status){
+            manualMuteText.setText(Utils.tapToUnMute);
+            manualMuteButton.setCardBackgroundColor(Color.RED);
+            status =false;
+        }else{
+            manualMuteText.setText(Utils.tapToMute);
+            manualMuteButton.setCardBackgroundColor(ContextCompat.getColor(this,R.color.green));
+            status =true;
+        }
+
+        sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,status);
+    }
+    private void updateAppList(){
+
+        Gson gson = new Gson();
+        String appList = sharePreference.get_data(this,Utils.selectedAppKey);
+        if(!TextUtils.equals(appList,"nothing")) {
+
+
+            List<ApplicationInfoModel> applicationInfo = gson.fromJson(appList, new TypeToken<List<ApplicationInfoModel>>() {
+            }.getType());
+            applicationInfoModels.clear();
+            applicationInfoModels.addAll(applicationInfo);
+
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void setUpUi(){
+
+
+        manualMuteButton = findViewById(R.id.manualMuteButton);
+        manualMuteText = findViewById(R.id.manualMuteText);
+        toastSwitch = findViewById(R.id.toastSwitch);
+        autoMuteEnableSwitch = findViewById(R.id.autoMuteEnableSwitch);
+
+
+        toastSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = ((Switch) v).isChecked();
+                sharePreference.set_data_boolean(MainActivity.this,Utils.isToastEnableKey,isChecked);
+                Toast.makeText(MainActivity.this,"Notification status change to "+isChecked,Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        autoMuteEnableSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = ((Switch) v).isChecked();
+                boolean state = AppMute.isAccessibilitySettingsOn(MainActivity.this);
+
+                if(isChecked){
+                    if(state){
+                        sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,true);
+                        Toast.makeText(MainActivity.this,"Auto Mute status change to "+isChecked,Toast.LENGTH_SHORT).show();
+
+
+                    }else {
+                        AlertDialogForAccessibility();
+                    }
+                }else {
+                    sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
+                }
+            }
+        });
+        adapter = new AppSelectedAdapter(applicationInfoModels,pm);
+        RecyclerView appSelectionRecycleView = findViewById(R.id.appSelectedRecycleView);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this,calculateNoOfColumns(this,100));//new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        appSelectionRecycleView.setLayoutManager(layoutManager);
+        appSelectionRecycleView.setItemAnimator(new DefaultItemAnimator());
+        appSelectionRecycleView.setHasFixedSize(true);
+        appSelectionRecycleView.setNestedScrollingEnabled(false);
+
+        appSelectionRecycleView.setAdapter(adapter);
+    }
+
+    private void AlertDialogForAccessibility(){
+        new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle("Accessibility permission required")
+                .setMessage("This app need accessibility permission to enable automatic mute")
+
+                // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Continue with delete operation
+                        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                        startActivity(intent);
+                    }
+                })
+
+                // A null listener allows the button to dismiss the dialog and take no further action.
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        autoMuteEnableSwitch.setChecked(false);
+                    }
+                })
+                .setIcon(R.drawable.ic_info)
+                .show();
+    }
+    public int calculateNoOfColumns(Context context , int width) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        return (int) (dpWidth / width);
+    }
+}

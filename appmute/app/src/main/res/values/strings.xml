@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AppMute</string>
+    <string name="accessibility_service_label">AppMute</string>
+    <string name="accessibility_service_description">AppMute - Mutes sound</string>
+</resources>
