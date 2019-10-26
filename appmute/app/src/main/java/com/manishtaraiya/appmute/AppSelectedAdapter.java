@@ -67,22 +67,23 @@ public class AppSelectedAdapter extends RecyclerView.Adapter<AppSelectedAdapter.
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        assert applicationInfo != null;
-        holder.appName.setText(pm.getApplicationLabel(applicationInfo));
+       if (applicationInfo != null) {
+           holder.appName.setText(pm.getApplicationLabel(applicationInfo));
 
-        RequestOptions options = new RequestOptions()
-                .fitCenter();
-                //.placeholder(R.drawable.placeholder)
-                //.error(R.drawable.placeholder);
-        Glide.with(context).load(pm.getApplicationIcon(applicationInfo)).apply(options).into(holder.appIcon);
+           RequestOptions options = new RequestOptions()
+                   .fitCenter();
+           //.placeholder(R.drawable.placeholder)
+           //.error(R.drawable.placeholder);
+           Glide.with(context).load(pm.getApplicationIcon(applicationInfo)).apply(options).into(holder.appIcon);
 
-        holder.appSelectedLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent launchIntent = pm.getLaunchIntentForPackage(applicationInfoModel.getPackageName());
-                context.startActivity( launchIntent );
-            }
-        });
+           holder.appSelectedLayout.setOnClickListener(new View.OnClickListener() {
+               @Override
+               public void onClick(View v) {
+                   Intent launchIntent = pm.getLaunchIntentForPackage(applicationInfoModel.getPackageName());
+                   context.startActivity(launchIntent);
+               }
+           });
+       }
 
     }
 

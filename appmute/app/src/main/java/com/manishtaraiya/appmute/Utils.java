@@ -1,5 +1,16 @@
 package com.manishtaraiya.appmute;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.text.TextUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Utils {
 
     public static final String selectedAppKey = "selected_app";
@@ -10,5 +21,77 @@ public class Utils {
     public static final String isInMuteModeKey = "is_in_mute_mode";
     public static final String isToastEnableKey = "is_toast_enable";
     public static final String isAutoMuteEnableKey = "is_auto_mute_enable";
+    public static String isNotificationOn = "is_notification_on";
 
+    private  ProgressDialog mProgressDialog;
+
+
+    public static void addRemoveSelectedApp(Context context , String packageName, String appName , boolean state){
+        Gson gson = new Gson();
+        ApplicationInfoModel applicationInfo = new ApplicationInfoModel(packageName,state,appName);
+        MySharePreference sharePreference = new MySharePreference();
+        String appList = sharePreference.get_data(context,Utils.selectedAppKey);
+        List<ApplicationInfoModel> selectedInfoModels;
+        if(!TextUtils.equals(appList,"nothing")) {
+            selectedInfoModels = gson.fromJson(appList, new TypeToken<List<ApplicationInfoModel>>() {
+            }.getType());
+        }else {
+            selectedInfoModels = new ArrayList<>();
+        }
+        if(selectedInfoModels.size() == 0){
+            if(state) {
+                applicationInfo.setSelected(true);
+                selectedInfoModels.add(applicationInfo);
+            }
+        }else {
+
+            for (int i=0 ; i< selectedInfoModels.size() ; i++){
+                if(TextUtils.equals(selectedInfoModels.get(i).getPackageName(),applicationInfo.getPackageName())) {
+                    if(state) return;
+                    else {
+                        selectedInfoModels.remove(i);
+                        break;
+                    }
+                }
+            }
+
+            if(state){
+                applicationInfo.setSelected(true);
+                selectedInfoModels.add(applicationInfo);
+
+            }
+
+        }
+
+        appList = gson.toJson(selectedInfoModels);
+        sharePreference.set_data(context,Utils.selectedAppKey,appList);
+
+    }
+
+
+
+    public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packageName, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+
+    public  void showProgressDialog(Context ctx, String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(ctx);
+            mProgressDialog.setIndeterminate(true);
+        }
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
+
+    public  void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+    }
 }

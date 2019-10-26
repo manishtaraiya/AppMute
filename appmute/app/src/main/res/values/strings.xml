@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">AppMute</string>
     <string name="accessibility_service_label">AppMute</string>
-    <string name="accessibility_service_description">AppMute - Mutes sound</string>
+    <string name="accessibility_service_description">AppMute - Mutes sound \nYour data will reside on your device and not be retrieved or copied to cloud or interact any manner with the cloud.</string>
+    <string name="select_app_to_mute_automatically">Select app to mute automatically</string>
 </resources>

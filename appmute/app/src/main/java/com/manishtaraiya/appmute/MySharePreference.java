@@ -6,7 +6,6 @@ import android.util.Log;
 
 
 public class MySharePreference {
-    private static boolean is_log_On = false;
 
     public void set_data(Context context, String key, String data) {
         Editor editor = context.getSharedPreferences(context.getApplicationContext().getPackageName(), 0).edit();
@@ -72,6 +71,7 @@ public class MySharePreference {
     }
 
     private static void log_i(String index, String values) {
+        boolean is_log_On = false;
         if (is_log_On) {
             Log.i("Manish", index + " " + values);
         }

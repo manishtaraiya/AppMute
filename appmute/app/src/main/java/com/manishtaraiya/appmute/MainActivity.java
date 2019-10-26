@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
     AppSelectedAdapter adapter;
     private PackageManager pm;
     Switch toastSwitch,autoMuteEnableSwitch;
+    CardView appSelectCard;
+    LinearLayout appListInfoLayout;
+    RecyclerView appSelectionRecycleView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +60,6 @@ public class MainActivity extends AppCompatActivity {
         ImageView appBarImage = toolbar.findViewById(R.id.appBarImage);
         RequestOptions options = new RequestOptions()
                 .fitCenter();
-        //.placeholder(R.drawable.placeholder)
-        //.error(R.drawable.placeholder);
         Glide.with(this).load(ContextCompat.getDrawable(this,R.drawable.app_mute_white)).apply(options).into(appBarImage);
 
         setSupportActionBar(toolbar);
@@ -72,10 +74,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         updateAppList();
-        //boolean state = AppMute.isAccessibilitySettingsOn(this);
-        //Toast.makeText(this,"Accessibility : "+ state,Toast.LENGTH_SHORT).show();
-        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
-        changeManualMuteButton(!isManualMute);
+
+        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,true);
+        changeManualMuteButton(isManualMute);
 
         boolean isToastEnable = sharePreference.get_data_boolean(MainActivity.this,Utils.isToastEnableKey);
         toastSwitch.setChecked(isToastEnable);
@@ -83,10 +84,16 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isAutoMuteEnabled = sharePreference.get_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
         boolean isAccessibilityOn = AppMute.isAccessibilitySettingsOn(MainActivity.this);
-        if(isAutoMuteEnabled) {
-            autoMuteEnableSwitch.setChecked(isAccessibilityOn);
+        if(isAutoMuteEnabled && isAccessibilityOn) {
+            autoMuteEnableSwitch.setChecked(true);
+            appSelectCard.setVisibility(View.VISIBLE);
+            appListInfoLayout.setVisibility(View.VISIBLE);
+            appSelectionRecycleView.setVisibility(View.VISIBLE);
         }else{
             autoMuteEnableSwitch.setChecked(false);
+            appSelectCard.setVisibility(View.GONE);
+            appListInfoLayout.setVisibility(View.GONE);
+            appSelectionRecycleView.setVisibility(View.GONE);
         }
     }
 
@@ -98,19 +105,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void manualMuteClicked(View view) {
         boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
-        changeManualMuteButton(isManualMute);
+        changeManualMuteButton(!isManualMute);
         new SetMasterMute().setMasterMute(isManualMute,this);
     }
 
     private void changeManualMuteButton(boolean status) {
         if(status){
-            manualMuteText.setText(Utils.tapToUnMute);
-            manualMuteButton.setCardBackgroundColor(Color.RED);
-            status =false;
-        }else{
             manualMuteText.setText(Utils.tapToMute);
             manualMuteButton.setCardBackgroundColor(ContextCompat.getColor(this,R.color.green));
-            status =true;
+
+        }else{
+            manualMuteText.setText(Utils.tapToUnMute);
+            manualMuteButton.setCardBackgroundColor(Color.RED);
         }
 
         sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,status);
@@ -125,6 +131,12 @@ public class MainActivity extends AppCompatActivity {
             List<ApplicationInfoModel> applicationInfo = gson.fromJson(appList, new TypeToken<List<ApplicationInfoModel>>() {
             }.getType());
             applicationInfoModels.clear();
+            for(ApplicationInfoModel model:applicationInfo){
+                if(!Utils.isPackageInstalled(model.getPackageName(),pm)){
+                    applicationInfo.remove(model);
+                    Utils.addRemoveSelectedApp(this, model.getPackageName(),model.getAppName(), false);
+                }
+            }
             applicationInfoModels.addAll(applicationInfo);
 
             adapter.notifyDataSetChanged();
@@ -132,20 +144,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpUi(){
-
-
         manualMuteButton = findViewById(R.id.manualMuteButton);
         manualMuteText = findViewById(R.id.manualMuteText);
         toastSwitch = findViewById(R.id.toastSwitch);
         autoMuteEnableSwitch = findViewById(R.id.autoMuteEnableSwitch);
-
+        appSelectCard = findViewById(R.id.appSelectCard);
+        appListInfoLayout = findViewById(R.id.appListInfoLayout);
+        appSelectionRecycleView = findViewById(R.id.appSelectedRecycleView);
 
         toastSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean isChecked = ((Switch) v).isChecked();
                 sharePreference.set_data_boolean(MainActivity.this,Utils.isToastEnableKey,isChecked);
-                Toast.makeText(MainActivity.this,"Notification status change to "+isChecked,Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,"Notification status change to "+isChecked,Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -158,19 +170,23 @@ public class MainActivity extends AppCompatActivity {
                 if(isChecked){
                     if(state){
                         sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,true);
-                        Toast.makeText(MainActivity.this,"Auto Mute status change to "+isChecked,Toast.LENGTH_SHORT).show();
-
-
+                        //Toast.makeText(MainActivity.this,"Auto Mute status change to "+ isChecked,Toast.LENGTH_SHORT).show();
+                        appSelectCard.setVisibility(View.VISIBLE);
+                        appListInfoLayout.setVisibility(View.VISIBLE);
+                        appSelectionRecycleView.setVisibility(View.VISIBLE);
                     }else {
                         AlertDialogForAccessibility();
                     }
                 }else {
                     sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
+                    appSelectCard.setVisibility(View.GONE);
+                    appListInfoLayout.setVisibility(View.GONE);
+                    appSelectionRecycleView.setVisibility(View.GONE);
                 }
             }
         });
         adapter = new AppSelectedAdapter(applicationInfoModels,pm);
-        RecyclerView appSelectionRecycleView = findViewById(R.id.appSelectedRecycleView);
+
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this,calculateNoOfColumns(this,100));//new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         appSelectionRecycleView.setLayoutManager(layoutManager);
         appSelectionRecycleView.setItemAnimator(new DefaultItemAnimator());

@@ -28,15 +28,14 @@ import java.util.List;
 
 public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapter.ViewHolder>{
 
-    private List<ApplicationInfoModel> applicationInfoModels;
+    private List<ApplicationSelectionModel> applicationInfoModels;
 
-    //Context context;
-    PackageManager pm;
-    private MySharePreference sharePreference = new MySharePreference();
 
-    public AppSelectionAdapter(List<ApplicationInfoModel> applicationInfoModel, PackageManager pm){
+
+
+    public AppSelectionAdapter(List<ApplicationSelectionModel> applicationInfoModel){
         this.applicationInfoModels = applicationInfoModel;
-        this.pm = pm;
+
     }
 
     @NonNull
@@ -58,35 +57,35 @@ public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapte
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         final Context context = holder.itemView.getContext();
-        final ApplicationInfoModel applicationInfoModel = applicationInfoModels.get(position);
-        ApplicationInfo applicationInfo = null;
+        final ApplicationSelectionModel applicationInfoModel = applicationInfoModels.get(position);
+        /*ApplicationInfo applicationInfo = null;
         try {
             applicationInfo = pm.getApplicationInfo(applicationInfoModel.getPackageName(),0);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
-        }
-        assert applicationInfo != null;
+        }*/
 
-        holder.appName.setText(pm.getApplicationLabel(applicationInfo));
-        holder.appSelection.setChecked(applicationInfoModel.isSelected());
-        holder.appSelection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isChecked = ((CheckBox) v).isChecked();
-                addRemoveSelectedApp(context,applicationInfoModel,isChecked);
-            }
-        });
+
+            holder.appName.setText(applicationInfoModel.getAppName());
+            holder.appSelection.setChecked(applicationInfoModel.isSelected());
+            holder.appSelection.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isChecked = ((CheckBox) v).isChecked();
+                    Utils.addRemoveSelectedApp(context, applicationInfoModel.getPackageName(),applicationInfoModel.getAppName(), isChecked);
+                }
+            });
         /*holder.appSelection.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 addRemoveSelectedApp(context,applicationInfoModel,isChecked);
             }
         });*/
-        RequestOptions options = new RequestOptions()
-                .fitCenter();
-                //.placeholder(R.drawable.placeholder)
-                //.error(R.drawable.placeholder);
-        Glide.with(context).load(pm.getApplicationIcon(applicationInfo)).apply(options).into(holder.appIcon);
+            RequestOptions options = new RequestOptions()
+                    .fitCenter();
+            //.placeholder(R.drawable.placeholder)
+            //.error(R.drawable.placeholder);
+            Glide.with(context).load(applicationInfoModel.getImage()).apply(options).into(holder.appIcon);
 
         /*holder.appSelectionLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,6 +96,8 @@ public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapte
         });*/
 
 
+
+
     }
 
     @Override
@@ -104,45 +105,17 @@ public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapte
         return applicationInfoModels.size();
     }
 
-    private void addRemoveSelectedApp(Context context ,ApplicationInfoModel applicationInfo,boolean state){
-        Gson gson = new Gson();
-        String appList = sharePreference.get_data(context,Utils.selectedAppKey);
-        List<ApplicationInfoModel> selectedInfoModels;
-        if(!TextUtils.equals(appList,"nothing")) {
-            selectedInfoModels = gson.fromJson(appList, new TypeToken<List<ApplicationInfoModel>>() {
-            }.getType());
-        }else {
-            selectedInfoModels = new ArrayList<>();
-        }
-        if(selectedInfoModels.size() == 0){
-            if(state) {
-                applicationInfo.setSelected(true);
-                selectedInfoModels.add(applicationInfo);
-            }
-        }else {
-
-            for (int i=0 ; i< selectedInfoModels.size() ; i++){
-                if(TextUtils.equals(selectedInfoModels.get(i).getPackageName(),applicationInfo.getPackageName())) {
-                    if(state) return;
-                    else {
-                        selectedInfoModels.remove(i);
-                        break;
-                    }
-                }
-            }
-
-            if(state){
-                applicationInfo.setSelected(true);
-                selectedInfoModels.add(applicationInfo);
-
-            }
-
-        }
-
-        appList = gson.toJson(selectedInfoModels);
-        sharePreference.set_data(context,Utils.selectedAppKey,appList);
-
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access

@@ -3,20 +3,28 @@ package com.manishtaraiya.appmute;
 
 import android.graphics.drawable.Drawable;
 
-public class ApplicationInfoModel {
+public class ApplicationSelectionModel {
     private String packageName;
     private boolean isSelected;
     private String appName;
+    private Drawable image;
 
-    public ApplicationInfoModel() {
+    public ApplicationSelectionModel() {
     }
 
+    public Drawable getImage() {
+        return image;
+    }
 
-    public ApplicationInfoModel(String packageName, boolean isSelected, String appName) {
+    public void setImage(Drawable image) {
+        this.image = image;
+    }
+
+    public ApplicationSelectionModel(String packageName, boolean isSelected, String appName, Drawable image) {
         this.packageName = packageName;
         this.isSelected = isSelected;
         this.appName = appName;
-
+        this.image = image;
     }
 
 

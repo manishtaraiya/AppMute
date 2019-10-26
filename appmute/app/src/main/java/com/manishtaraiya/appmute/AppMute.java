@@ -24,9 +24,8 @@ public class AppMute extends AccessibilityService {
     private final ArrayList<String> IGNORE_PACKAGE_NAMES = new ArrayList<>(Arrays.asList("com.android.systemui", "com.samsung.android.app.cocktailbarservice", "com.samsung.android.MtpApplication"));
 
     private final AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-    private static final String TAG = "MyAccessibilityService";
+    private static final String TAG = "AppMuteAccessibility";
 
-    private boolean isMuted = false;
     MySharePreference sharePreference = new MySharePreference();
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
@@ -38,8 +37,8 @@ public class AppMute extends AccessibilityService {
         if(!isManualMute ||
                 TextUtils.equals(packageName,"null") ||
                 TextUtils.isEmpty(packageName)||
-                IGNORE_PACKAGE_NAMES.contains(packageName)||
-                TextUtils.equals(packageName,getPackageName())
+                IGNORE_PACKAGE_NAMES.contains(packageName)/*||
+                TextUtils.equals(packageName,getPackageName())*/
         ) {
             return;
         }
@@ -75,15 +74,19 @@ public class AppMute extends AccessibilityService {
                         if(isToastEnabled && !isInMuteMode){
                             Toast.makeText(getApplicationContext(), "Automatic Mute Enabled for " + pm.getApplicationLabel(appInfo), Toast.LENGTH_SHORT).show();
                         }
-                        new SetMasterMute().setMasterMute(true, this);
-
+                        if(!isInMuteMode) {
+                            new SetMasterMute().setMasterMute(true, this);
+                        }
                         return;
                     }
 
                 }
             }
-            new SetMasterMute().setMasterMute(false, this);
+            if(isInMuteMode) {
+                new SetMasterMute().setMasterMute(false, this);
+            }
             if(isToastEnabled && isInMuteMode){
+
                 Toast.makeText(getApplicationContext(), "Automatic Mute Disabled ", Toast.LENGTH_SHORT).show();
             }
         }
@@ -110,6 +113,12 @@ public class AppMute extends AccessibilityService {
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,true);
+
+    }
 
     /**
      * Check if Accessibility Service is enabled.
