@@ -13,9 +13,11 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -71,7 +73,7 @@ public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapte
             holder.appSelection.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    boolean isChecked = ((CheckBox) v).isChecked();
+                    boolean isChecked = ((SwitchCompat) v).isChecked();
                     Utils.addRemoveSelectedApp(context, applicationInfoModel.getPackageName(),applicationInfoModel.getAppName(), isChecked);
                 }
             });
@@ -125,7 +127,7 @@ public class AppSelectionAdapter extends RecyclerView.Adapter<AppSelectionAdapte
         LinearLayout appSelectionLayout;
         ImageView appIcon;
         TextView appName;
-        CheckBox appSelection;
+        SwitchCompat appSelection;
 
         // We also create a constructor that accepts the entire item row
         // and does the view lookups to find each subview

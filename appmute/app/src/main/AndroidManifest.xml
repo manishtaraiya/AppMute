@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+
     package="com.manishtaraiya.appmute">
 
     <application
+        android:description="@string/app_description"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
+        android:theme="@style/AppTheme">
         <receiver android:name=".AppMuteWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -40,6 +40,9 @@
             android:name=".MainActivity"
             android:theme="@style/MainTheme">
             <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="com.manishtaraiya.appmute.MainActivity" />
 

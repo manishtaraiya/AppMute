@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -75,6 +76,13 @@ public class SetMasterMute {
                 NotificationChannel mChannel = new NotificationChannel(
                         channelId, channelName, importance);
                 assert notificationManager != null;
+
+                mChannel.setDescription("no sound");
+                mChannel.setSound(null,null);
+                mChannel.enableLights(false);
+                mChannel.setLightColor(Color.BLUE);
+                mChannel.enableVibration(false);
+
                 notificationManager.createNotificationChannel(mChannel);
             }
 
@@ -82,6 +90,8 @@ public class SetMasterMute {
                     .setSmallIcon(R.drawable.ic_mute)
                     .setContentTitle("AppMute Running")
                     .setContentText("Click on notification to open app")
+                    .setSound(null)
+                    .setVibrate(null)
                     .setOngoing(true)
                     .setAutoCancel(false);
 
