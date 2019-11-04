@@ -1,34 +1,61 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
-    android:id="@+id/widget_layout"
     android:layout_gravity="center"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="@dimen/widget_margin">
 
-    <LinearLayout
-        android:id="@+id/widget_image_layout"
+
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/circular_background_blue"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_height="wrap_content">
 
 
-        <ImageView
+        <LinearLayout
+            android:id="@+id/widget_image_on_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_mute_widget" />
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:background="@drawable/circular_background_blue"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:visibility="visible">
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_mute_widget" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_image_off_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/circular_background_red"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:visibility="gone">
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_mute_widget" />
+        </LinearLayout>
+    </FrameLayout>
+
 
     <TextView
-        android:textColor="@android:color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Manual Mute"/>
+        android:text="Manual Mute"
+        android:textColor="@android:color/white" />
+
 
 </LinearLayout>

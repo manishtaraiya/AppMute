@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,6 +27,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RemoteViews;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void manualMuteClicked(View view) {
         boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+        updateWidget();
         changeManualMuteButton(!isManualMute);
         new SetMasterMute().setMasterMute(isManualMute,this);
     }
@@ -118,9 +122,35 @@ public class MainActivity extends AppCompatActivity {
             manualMuteText.setText(Utils.tapToUnMute);
             manualMuteButton.setCardBackgroundColor(Color.RED);
         }
-
         sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,status);
     }
+
+
+    private void updateWidget(){
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+
+        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.app_mute_widget);
+
+        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+
+        if(isManualMute){
+            new SetMasterMute().setMasterMute(true, this);
+            views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
+            views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
+        }else {
+            new SetMasterMute().setMasterMute(false, this);
+            views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
+            views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
+        }
+
+
+
+        int[] appWidgetId = AppWidgetManager.getInstance(this).getAppWidgetIds(
+                new ComponentName(this, AppMuteWidget.class));
+        // Instruct the widget manager to update the widget
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
     private void updateAppList(){
 
         Gson gson = new Gson();
