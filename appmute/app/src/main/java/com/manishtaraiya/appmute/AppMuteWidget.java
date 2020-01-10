@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -50,7 +52,9 @@ public class AppMuteWidget extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (intent.getAction().equals(CLICK_ACTION)) {
+        String action = intent.getAction();
+
+        if (TextUtils.equals(action,CLICK_ACTION)) {
             //Toast.makeText(context, "Hello", Toast.LENGTH_SHORT).show();
 
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -68,6 +72,7 @@ public class AppMuteWidget extends AppWidgetProvider {
                 views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
                 views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
             }
+
 
             sharePreference.set_data_boolean(context,Utils.statusManualMuteButtonKey,!isManualMute);
 
