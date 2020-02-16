@@ -30,11 +30,12 @@ public class AppMute extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
 
-        Log.v(TAG, "***** onAccessibilityEvent");
-        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+        Log.v(TAG, "Event :: "+event.toString());
+
+      boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
 
         String packageName  = String.valueOf(event.getPackageName());
-        if(!isManualMute ||
+        if(isManualMute ||
                 TextUtils.equals(packageName,"null") ||
                 TextUtils.isEmpty(packageName)||
                 IGNORE_PACKAGE_NAMES.contains(packageName)/*||
@@ -103,7 +104,7 @@ public class AppMute extends AccessibilityService {
     public void onServiceConnected() {
         Log.v(TAG, "***** onServiceConnected");
 
-        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED|AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED|AccessibilityEvent.TYPE_WINDOWS_CHANGED ;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         info.notificationTimeout = 100;
         if (Build.VERSION.SDK_INT >= 19) {

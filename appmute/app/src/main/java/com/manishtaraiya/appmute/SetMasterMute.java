@@ -25,25 +25,17 @@ import java.util.Random;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class SetMasterMute {
-    private MySharePreference mySharePreference =  new MySharePreference();
+    private MySharePreference mySharePreference = new MySharePreference();
+
     @SuppressLint({"UseValueOf"})
     public void setMasterMute(boolean flag, Context context) {
         mySharePreference.set_data_boolean(context, Utils.isInMuteModeKey, flag);
-        boolean isNotificationON = mySharePreference.get_data_boolean(context, Utils.isNotificationOn, false);
         AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-
-
-        if(flag && !isNotificationON) {
-            mySharePreference.set_data_boolean(context,Utils.isNotificationOn,true);
-            appNotification(context, true);
-        }else if (!flag && isNotificationON){
-            mySharePreference.set_data_boolean(context,Utils.isNotificationOn,false);
-            appNotification(context, false);
-        }
+        appNotification(context, flag);
 
         try {
             assert mAudioManager != null;
-            Method obj =mAudioManager.getClass().getMethod("setMasterMute", Boolean.TYPE, Integer.TYPE);
+            Method obj = mAudioManager.getClass().getMethod("setMasterMute", Boolean.TYPE, Integer.TYPE);
             Boolean obj1 = flag;
             Integer obj2 = 0;
             obj.invoke(mAudioManager, obj1, obj2);
@@ -63,7 +55,7 @@ public class SetMasterMute {
 
         int notificationId = 23051990;
 
-        if(show) {
+        if (show) {
 
 
             //new Random().nextInt(9999 - 1) + 1;
@@ -78,7 +70,7 @@ public class SetMasterMute {
                 assert notificationManager != null;
 
                 mChannel.setDescription("no sound");
-                mChannel.setSound(null,null);
+                mChannel.setSound(null, null);
                 mChannel.enableLights(false);
                 mChannel.setLightColor(Color.BLUE);
                 mChannel.enableVibration(false);
@@ -105,7 +97,7 @@ public class SetMasterMute {
 
             assert notificationManager != null;
             notificationManager.notify(notificationId, mBuilder.build());
-        }else {
+        } else {
             assert notificationManager != null;
             notificationManager.cancel(notificationId);
         }

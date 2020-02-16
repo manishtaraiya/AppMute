@@ -21,7 +21,7 @@ public class Utils {
     public static final String isInMuteModeKey = "is_in_mute_mode";
     public static final String isToastEnableKey = "is_toast_enable";
     public static final String isAutoMuteEnableKey = "is_auto_mute_enable";
-    public static String isNotificationOn = "is_notification_on";
+    public static final String statusWidgetMuteButtonKey = "status_widget_mute_button";
 
     private  ProgressDialog mProgressDialog;
 

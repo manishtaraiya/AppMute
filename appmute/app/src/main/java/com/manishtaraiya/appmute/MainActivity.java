@@ -7,7 +7,6 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.appwidget.AppWidgetManager;
@@ -108,41 +107,45 @@ public class MainActivity extends AppCompatActivity {
 
     public void manualMuteClicked(View view) {
         boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
-        updateWidget();
-        changeManualMuteButton(!isManualMute);
-        new SetMasterMute().setMasterMute(isManualMute,this);
+        //change state
+        isManualMute = !isManualMute;
+        sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,isManualMute);
+        changeManualMuteButton(isManualMute);
+
     }
 
     private void changeManualMuteButton(boolean status) {
-        if(status){
-            manualMuteText.setText(Utils.tapToMute);
-            manualMuteButton.setCardBackgroundColor(ContextCompat.getColor(this,R.color.green));
 
-        }else{
+        updateWidget(status);
+        new SetMasterMute().setMasterMute(status,this);
+
+        if(status){
             manualMuteText.setText(Utils.tapToUnMute);
             manualMuteButton.setCardBackgroundColor(Color.RED);
+
+        }else{
+            manualMuteText.setText(Utils.tapToMute);
+            manualMuteButton.setCardBackgroundColor(ContextCompat.getColor(this,R.color.green));
         }
-        sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,status);
+        //sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,status);
     }
 
 
-    private void updateWidget(){
+    private void updateWidget(boolean state){
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
 
         RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.app_mute_widget);
+        new SetMasterMute().setMasterMute(state, this);
 
-        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
-
-        if(isManualMute){
-            new SetMasterMute().setMasterMute(true, this);
+        if(state){
             views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
         }else {
-            new SetMasterMute().setMasterMute(false, this);
             views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
         }
 
+        sharePreference.set_data_boolean(this,Utils.statusWidgetMuteButtonKey,state);
 
 
         int[] appWidgetId = AppWidgetManager.getInstance(this).getAppWidgetIds(
