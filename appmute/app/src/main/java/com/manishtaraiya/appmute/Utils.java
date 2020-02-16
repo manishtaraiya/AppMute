@@ -3,6 +3,9 @@ package com.manishtaraiya.appmute;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
@@ -92,6 +95,20 @@ public class Utils {
     public  void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
+        }
+    }
+
+    public static void vibrate(Context context){
+
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if(v!=null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(50);
+            }
         }
     }
 }

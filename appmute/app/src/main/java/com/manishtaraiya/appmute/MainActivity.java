@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,6 +39,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.manishtaraiya.appmute.AppMuteWidget.CLICK_ACTION;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         isManualMute = !isManualMute;
         sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,isManualMute);
         changeManualMuteButton(isManualMute);
-
+        Utils.vibrate(this);
     }
 
     private void changeManualMuteButton(boolean status) {
@@ -146,7 +149,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         sharePreference.set_data_boolean(this,Utils.statusWidgetMuteButtonKey,state);
+        Intent intent = new Intent(this, AppMuteWidget.class);
 
+        intent.setAction(CLICK_ACTION);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
 
         int[] appWidgetId = AppWidgetManager.getInstance(this).getAppWidgetIds(
                 new ComponentName(this, AppMuteWidget.class));

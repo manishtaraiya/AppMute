@@ -29,24 +29,9 @@ public class AppMuteWidget extends AppWidgetProvider {
 
         Intent intent = new Intent(context, AppMuteWidget.class);
         intent.setAction(CLICK_ACTION);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-
-        //CharSequence widgetText = context.getString(R.string.appwidget_text);
-        // Construct the RemoteViews object
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_mute_widget);
-        //views.setTextViewText(R.id.appwidget_text, widgetText);
         views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
-        //boolean isManualMute = sharePreference.get_data_boolean(context,Utils.statusManualMuteButtonKey,false);
-
-//        if(!isManualMute){
-//            new SetMasterMute().setMasterMute(true, context);
-//            views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
-//            views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
-//        }else {
-//            new SetMasterMute().setMasterMute(false, context);
-//            views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
-//            views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
-//        }
 
         boolean isWidgetMute = sharePreference.get_data_boolean(context,Utils.statusWidgetMuteButtonKey,false);
         if(isWidgetMute){
@@ -60,6 +45,8 @@ public class AppMuteWidget extends AppWidgetProvider {
         }
         sharePreference.set_data_boolean(context,Utils.statusManualMuteButtonKey,isWidgetMute);
 
+        /* here you "refresh" the pending intent for the button */
+        appWidgetManager.updateAppWidget(appWidgetId, views);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -107,6 +94,7 @@ public class AppMuteWidget extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_mute_widget);
 
+        Utils.vibrate(context);
 
         if(state){
             new SetMasterMute().setMasterMute(true, context);
@@ -119,6 +107,13 @@ public class AppMuteWidget extends AppWidgetProvider {
         }
 
         sharePreference.set_data_boolean(context,Utils.statusManualMuteButtonKey,state);
+
+        Intent intent = new Intent(context, AppMuteWidget.class);
+
+        intent.setAction(CLICK_ACTION);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
+
 
         int[] appWidgetId = AppWidgetManager.getInstance(context).getAppWidgetIds(
                 new ComponentName(context, AppMuteWidget.class));
