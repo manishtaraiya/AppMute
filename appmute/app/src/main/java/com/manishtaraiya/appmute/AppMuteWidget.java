@@ -9,9 +9,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Implementation of App Widget functionality.
@@ -97,10 +103,12 @@ public class AppMuteWidget extends AppWidgetProvider {
         Utils.vibrate(context);
 
         if(state){
+            //Toast.makeText(context,"Mute All ON",Toast.LENGTH_SHORT).show();
             new SetMasterMute().setMasterMute(true, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
         }else {
+            //Toast.makeText(context,"Mute All OFF",Toast.LENGTH_SHORT).show();
             new SetMasterMute().setMasterMute(false, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
@@ -120,6 +128,7 @@ public class AppMuteWidget extends AppWidgetProvider {
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
+
 
 }
 
