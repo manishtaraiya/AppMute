@@ -55,8 +55,9 @@ public class MainActivity extends AppCompatActivity {
     private PackageManager pm;
     Switch toastSwitch,autoMuteEnableSwitch;
     CardView appSelectCard;
-    LinearLayout appListInfoLayout;
+    //LinearLayout appListInfoLayout;
     RecyclerView appSelectionRecycleView;
+    LinearLayout muteNotificationLayout,enableAutoMuteLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         updateAppList();
 
-        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,true);
+        boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
         changeManualMuteButton(isManualMute);
 
         boolean isToastEnable = sharePreference.get_data_boolean(MainActivity.this,Utils.isToastEnableKey);
@@ -92,12 +93,12 @@ public class MainActivity extends AppCompatActivity {
         if(isAutoMuteEnabled && isAccessibilityOn) {
             autoMuteEnableSwitch.setChecked(true);
             appSelectCard.setVisibility(View.VISIBLE);
-            appListInfoLayout.setVisibility(View.VISIBLE);
+            //appListInfoLayout.setVisibility(View.VISIBLE);
             appSelectionRecycleView.setVisibility(View.VISIBLE);
         }else{
             autoMuteEnableSwitch.setChecked(false);
             appSelectCard.setVisibility(View.GONE);
-            appListInfoLayout.setVisibility(View.GONE);
+            //appListInfoLayout.setVisibility(View.GONE);
             appSelectionRecycleView.setVisibility(View.GONE);
         }
     }
@@ -189,8 +190,12 @@ public class MainActivity extends AppCompatActivity {
         toastSwitch = findViewById(R.id.toastSwitch);
         autoMuteEnableSwitch = findViewById(R.id.autoMuteEnableSwitch);
         appSelectCard = findViewById(R.id.appSelectCard);
-        appListInfoLayout = findViewById(R.id.appListInfoLayout);
+        //appListInfoLayout = findViewById(R.id.appListInfoLayout);
         appSelectionRecycleView = findViewById(R.id.appSelectedRecycleView);
+
+        muteNotificationLayout =findViewById(R.id.muteNotificationLayout);
+        enableAutoMuteLayout =findViewById(R.id.enableAutoMuteLayout);
+
 
         toastSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -201,30 +206,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        muteNotificationLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = (!(toastSwitch.isChecked()));
+                toastSwitch.setChecked(isChecked);
+                sharePreference.set_data_boolean(MainActivity.this,Utils.isToastEnableKey,isChecked);
+            }
+        });
+
         autoMuteEnableSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean isChecked = ((Switch) v).isChecked();
-                boolean state = AppMute.isAccessibilitySettingsOn(MainActivity.this);
-
-                if(isChecked){
-                    if(state){
-                        sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,true);
-                        //Toast.makeText(MainActivity.this,"Auto Mute status change to "+ isChecked,Toast.LENGTH_SHORT).show();
-                        appSelectCard.setVisibility(View.VISIBLE);
-                        appListInfoLayout.setVisibility(View.VISIBLE);
-                        appSelectionRecycleView.setVisibility(View.VISIBLE);
-                    }else {
-                        AlertDialogForAccessibility();
-                    }
-                }else {
-                    sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
-                    appSelectCard.setVisibility(View.GONE);
-                    appListInfoLayout.setVisibility(View.GONE);
-                    appSelectionRecycleView.setVisibility(View.GONE);
-                }
+                setAutoMuteMode(isChecked);
             }
         });
+
+        enableAutoMuteLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = (!(autoMuteEnableSwitch.isChecked()));
+                autoMuteEnableSwitch.setChecked(isChecked);
+                setAutoMuteMode(isChecked);
+            }
+        });
+
         adapter = new AppSelectedAdapter(applicationInfoModels,pm);
 
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this,calculateNoOfColumns(this,100));//new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -234,6 +241,25 @@ public class MainActivity extends AppCompatActivity {
         appSelectionRecycleView.setNestedScrollingEnabled(false);
 
         appSelectionRecycleView.setAdapter(adapter);
+    }
+
+    private void setAutoMuteMode(boolean state){
+        boolean accessibility_state = AppMute.isAccessibilitySettingsOn(MainActivity.this);
+        if(state){
+            if(accessibility_state){
+                sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,true);
+                appSelectCard.setVisibility(View.VISIBLE);
+                //appListInfoLayout.setVisibility(View.VISIBLE);
+                appSelectionRecycleView.setVisibility(View.VISIBLE);
+            }else {
+                AlertDialogForAccessibility();
+            }
+        }else {
+            sharePreference.set_data_boolean(MainActivity.this,Utils.isAutoMuteEnableKey,false);
+            appSelectCard.setVisibility(View.GONE);
+            //appListInfoLayout.setVisibility(View.GONE);
+            appSelectionRecycleView.setVisibility(View.GONE);
+        }
     }
 
     private void AlertDialogForAccessibility(){

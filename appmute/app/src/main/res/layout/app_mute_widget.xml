@@ -28,7 +28,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_mute_widget" />
+                android:src="@drawable/ic_unmute_widget" />
         </LinearLayout>
 
         <LinearLayout
@@ -55,7 +55,7 @@
         android:textSize="12sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Manual Mute"
+        android:text="Mute All"
         android:textColor="@android:color/white" />
 
 
