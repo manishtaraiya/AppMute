@@ -13,6 +13,8 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -23,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class AppSelectionActivity extends AppCompatActivity {
 
@@ -48,7 +53,23 @@ public class AppSelectionActivity extends AppCompatActivity {
         //loadApps(applicationSelectionModels);
         //updateList();
 
-        new loadAppsAsyncTask(applicationSelectionModels).execute();
+
+        utils.showProgressDialog(AppSelectionActivity.this,"Loading Apps...");
+        //new Thread(runnable).start();
+        new TaskRunner().executeAsync(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                //applicationSelectionModels = getInstalledApps(false);//loadApps();
+                updateList();
+                return true;
+            }
+        }, new TaskRunner.Callback<Boolean>() {
+            @Override
+            public void onComplete(Boolean result) {
+                utils.hideProgressDialog();
+                adapter.notifyDataSetChanged();
+            }
+        });
 
 
         adapter = new AppSelectionAdapter(applicationSelectionModels);
@@ -74,53 +95,42 @@ public class AppSelectionActivity extends AppCompatActivity {
         return true;
     }
 
-    public void loadApps(List<ApplicationSelectionModel> appModel ) {
-        try {
-            PackageManager packageManager = getPackageManager();
-            Intent intent = new Intent(Intent.ACTION_MAIN, null);
-            intent.addCategory(Intent.CATEGORY_LAUNCHER);
-            List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(intent, 0);
 
-            for (ResolveInfo resolveInfo : resolveInfoList) {
-                ApplicationSelectionModel model = new ApplicationSelectionModel();
-                model.setImage(resolveInfo.activityInfo.loadIcon(packageManager));
-                model.setAppName(resolveInfo.loadLabel(packageManager).toString());
-                model.setPackageName(resolveInfo.activityInfo.packageName);
-                appModel.add(model);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+
+    public static class TaskRunner {
+        private final Executor executor = Executors.newSingleThreadExecutor(); // change according to your requirements
+        private final Handler handler = new Handler(Looper.getMainLooper());
+
+        public interface Callback<R> {
+            void onComplete(R result);
+        }
+
+        public <R> void executeAsync(final Callable<R> callable, final Callback<R> callback) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final R result;
+                    try {
+                        result = callable.call();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.onComplete(result);
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
         }
     }
 
 
-    /* renamed from: jp.snowlife01.android.free_mutecamera.AppListActivity$b */
-    public class loadAppsAsyncTask extends AsyncTask<String, Integer, String> {
-        List<ApplicationSelectionModel> appModel;
-        loadAppsAsyncTask(List<ApplicationSelectionModel> appModel) {
-            this.appModel = appModel;
-        }
-
-        @Override
-        protected String doInBackground(String... strings) {
-            updateList();
-            return "Loaded";
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            utils.showProgressDialog(AppSelectionActivity.this,"Loading Apps...");
-
-        }
-
-        @Override
-        protected void onPostExecute(String s) {super.onPostExecute(s);
-            utils.hideProgressDialog();
-            adapter.notifyDataSetChanged();
-        }
-    }
-   private void updateList() {
+    private void updateList() {
 
         Gson gson = new Gson();
         List<ApplicationInfoModel> applicationInfo = null;
@@ -134,15 +144,15 @@ public class AppSelectionActivity extends AppCompatActivity {
 
         if (applicationInfo != null && applicationInfo.size() > 0) {
 
-            for(ApplicationInfoModel model:applicationInfo){
-                if(Utils.isPackageInstalled(model.getPackageName(),pm)){
-                    Drawable image = ContextCompat.getDrawable(this,R.drawable.app_mute);
+            for (ApplicationInfoModel model : applicationInfo) {
+                if (Utils.isPackageInstalled(model.getPackageName(), pm)) {
+                    Drawable image = ContextCompat.getDrawable(this, R.drawable.app_mute);
                     try {
-                         image = pm.getApplicationIcon(model.getPackageName());
+                        image = pm.getApplicationIcon(model.getPackageName());
                     } catch (PackageManager.NameNotFoundException e) {
                         e.printStackTrace();
                     }
-                    applicationSelectionModels.add(new ApplicationSelectionModel(model.getPackageName(),model.isSelected(),model.getAppName(),image));
+                    applicationSelectionModels.add(new ApplicationSelectionModel(model.getPackageName(), model.isSelected(), model.getAppName(), image));
                 }
             }
         }
@@ -161,9 +171,16 @@ public class AppSelectionActivity extends AppCompatActivity {
                     }
                 }
                 if (!foundInList) {
-                    InfoModels.add(new ApplicationSelectionModel(packageInfo.packageName, false,String.valueOf(pm.getApplicationLabel(packageInfo)),pm.getApplicationIcon(packageInfo)));
+                    String appName = String.valueOf(pm.getApplicationLabel(packageInfo));
+                    Drawable appIcon = null; //= pm.getApplicationIcon(packageInfo);
+                    try {
+                        appIcon = pm.getApplicationIcon(packageInfo.packageName);
 
-
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    if (appIcon != null)
+                        InfoModels.add(new ApplicationSelectionModel(packageInfo.packageName, false, appName, appIcon));
                 }
                 //Log.i(TAG, String.valueOf(pm.getApplicationLabel(packageInfo)));
             }

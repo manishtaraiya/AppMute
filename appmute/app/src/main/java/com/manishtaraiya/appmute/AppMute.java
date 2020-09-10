@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -27,37 +26,37 @@ public class AppMute extends AccessibilityService {
     private static final String TAG = "AppMuteAccessibility";
 
     MySharePreference sharePreference = new MySharePreference();
+    private long lastTimestamp = 0;
+
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
 
-        Log.v(TAG, "Event :: "+event.toString());
+        //Log.v(TAG, "Event :: " + event.toString());
 
-      boolean isManualMute = sharePreference.get_data_boolean(this,Utils.statusManualMuteButtonKey,false);
+        boolean isManualMute = sharePreference.get_data_boolean(this, Utils.statusManualMuteButtonKey, false);
 
-        String packageName  = String.valueOf(event.getPackageName());
-        if(isManualMute ||
-                TextUtils.equals(packageName,"null") ||
-                TextUtils.isEmpty(packageName)||
-                IGNORE_PACKAGE_NAMES.contains(packageName)/*||
-                TextUtils.equals(packageName,getPackageName())*/
+        String packageName = String.valueOf(event.getPackageName());
+        if (isManualMute ||
+                TextUtils.equals(packageName, "null") ||
+                TextUtils.isEmpty(packageName) ||
+                IGNORE_PACKAGE_NAMES.contains(packageName)
         ) {
             return;
         }
 
-        boolean isAutoModeEnabled = sharePreference.get_data_boolean(getApplicationContext(),Utils.isAutoMuteEnableKey,false);
-        boolean isToastEnabled = sharePreference.get_data_boolean(getApplicationContext(),Utils.isToastEnableKey,false);
+        boolean isAutoModeEnabled = sharePreference.get_data_boolean(getApplicationContext(), Utils.isAutoMuteEnableKey, false);
+        boolean isToastEnabled = sharePreference.get_data_boolean(getApplicationContext(), Utils.isToastEnableKey, false);
         ApplicationInfo appInfo = null;
         final PackageManager pm = getApplicationContext().getPackageManager();
         try {
-            appInfo = pm.getApplicationInfo(packageName,0);
+            appInfo = pm.getApplicationInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
         assert appInfo != null;
 
 
-        if(isAutoModeEnabled) {
-            //String packageName = String.valueOf(event.getPackageName());
+        if (isAutoModeEnabled) {
             Gson gson = new Gson();
             String appList = sharePreference.get_data(this, Utils.selectedAppKey);
             List<ApplicationInfoModel> applicationInfo = null;
@@ -66,16 +65,23 @@ public class AppMute extends AccessibilityService {
                 }.getType());
             }
 
-            boolean isInMuteMode =  sharePreference.get_data_boolean(this, Utils.isInMuteModeKey,false);
-
+            boolean isInMuteMode = sharePreference.get_data_boolean(this, Utils.isInMuteModeKey, false);
+            boolean allowToast = false;
+            long timestamp = 0;
             if (applicationInfo != null && applicationInfo.size() > 0) {
 
-                for(ApplicationInfoModel app : applicationInfo){
-                    if(TextUtils.equals(app.getPackageName(),packageName)){
-                        if(isToastEnabled && !isInMuteMode){
+                for (ApplicationInfoModel app : applicationInfo) {
+                    if (TextUtils.equals(app.getPackageName(), packageName)) {
+
+                        timestamp = System.currentTimeMillis();
+                        if (timestamp - lastTimestamp > 1000) {
+                            allowToast = true;
+                            lastTimestamp = timestamp;
+                        }
+                        if (isToastEnabled && !isInMuteMode && allowToast) {
                             Toast.makeText(getApplicationContext(), "Automatic Mute Enabled for " + pm.getApplicationLabel(appInfo), Toast.LENGTH_SHORT).show();
                         }
-                        if(!isInMuteMode) {
+                        if (!isInMuteMode) {
                             new SetMasterMute().setMasterMute(true, this);
                         }
                         return;
@@ -83,12 +89,18 @@ public class AppMute extends AccessibilityService {
 
                 }
             }
-            if(isInMuteMode) {
+            if (isInMuteMode) {
                 new SetMasterMute().setMasterMute(false, this);
             }
-            if(isToastEnabled && isInMuteMode){
+            if (isToastEnabled && isInMuteMode) {
 
-                Toast.makeText(getApplicationContext(), "Automatic Mute Disabled ", Toast.LENGTH_SHORT).show();
+                timestamp = System.currentTimeMillis();
+                if (timestamp - lastTimestamp > 1000) {
+                    allowToast = true;
+                    lastTimestamp = timestamp;
+                }
+                if (allowToast)
+                    Toast.makeText(getApplicationContext(), "Automatic Mute Disabled ", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -96,15 +108,15 @@ public class AppMute extends AccessibilityService {
 
     @Override
     public void onInterrupt() {
-        Log.v(TAG, "***** onInterrupt");
+        Log.v(TAG, "onInterrupt");
     }
 
 
     @Override
     public void onServiceConnected() {
-        Log.v(TAG, "***** onServiceConnected");
+        Log.v(TAG, "onServiceConnected");
 
-        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED|AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED|AccessibilityEvent.TYPE_WINDOWS_CHANGED ;
+        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED | AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED | AccessibilityEvent.TYPE_WINDOWS_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         info.notificationTimeout = 100;
         if (Build.VERSION.SDK_INT >= 19) {
@@ -117,19 +129,16 @@ public class AppMute extends AccessibilityService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        sharePreference.set_data_boolean(this,Utils.statusManualMuteButtonKey,true);
-
     }
 
     /**
      * Check if Accessibility Service is enabled.
      *
-     * @param mContext
+     * @param mContext context
      * @return <code>true</code> if Accessibility Service is ON, otherwise <code>false</code>
      */
     public static boolean isAccessibilitySettingsOn(Context mContext) {
         int accessibilityEnabled = 0;
-        //your package /   accessibility service path/class
         final String service = "com.manishtaraiya.appmute/com.manishtaraiya.appmute.AppMute";
 
 
@@ -145,25 +154,22 @@ public class AppMute extends AccessibilityService {
         TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
 
         if (accessibilityEnabled == 1) {
-            Log.v(TAG, "***ACCESSIBILITY IS ENABLED*** -----------------");
+            Log.v(TAG, "ACCESSIBILITY IS ENABLED");
             String settingValue = Settings.Secure.getString(
                     mContext.getApplicationContext().getContentResolver(),
                     Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
             if (settingValue != null) {
-                TextUtils.SimpleStringSplitter splitter = mStringColonSplitter;
-                splitter.setString(settingValue);
-                while (splitter.hasNext()) {
-                    String accessabilityService = splitter.next();
-
-                    Log.v(TAG, "-------------- > accessabilityService :: " + accessabilityService);
-                    if (accessabilityService.equalsIgnoreCase(service)) {
+                mStringColonSplitter.setString(settingValue);
+                while (mStringColonSplitter.hasNext()) {
+                    String str = mStringColonSplitter.next();
+                    if (str.equalsIgnoreCase(service)) {
                         Log.v(TAG, "We've found the correct setting - accessibility is switched on!");
                         return true;
                     }
                 }
             }
         } else {
-            Log.v(TAG, "***ACCESSIBILIY IS DISABLED***");
+            Log.v(TAG, "ACCESSIBILITY IS DISABLED");
         }
 
         return false;

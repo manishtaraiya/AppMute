@@ -71,9 +71,8 @@ public class MySharePreference {
     }
 
     private static void log_i(String index, String values) {
-        boolean is_log_On = false;
-        if (is_log_On) {
-            Log.i("Manish", index + " " + values);
-        }
+
+            //Log.i("Manish", index + " " + values);
+
     }
 }

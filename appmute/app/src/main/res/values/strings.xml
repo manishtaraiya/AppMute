@@ -2,8 +2,17 @@
     <string name="app_name">AppMute</string>
     <string name="accessibility_service_label">AppMute</string>
     <string name="accessibility_service_description">AppMute - Mutes sound \nYour data will reside on your device and not be retrieved or copied to cloud or interact any manner with the cloud.</string>
-    <string name="select_app_to_mute_automatically">Select app to mute automatically</string>
+    <string name="select_app_to_mute_automatically">Select App To Mute Automatically</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="app_description">Mute device by launching selected app, configured in AppMute.</string>
+    <string name="enable_automatic_mute">Enable Automatic Mute</string>
+    <string name="notify_automatic_mute">Notify Automatic Mute</string>
+    <string name="alarm">Alarm</string>
+    <string name="music">Music</string>
+    <string name="system">System</string>
+    <string name="notification">Notification</string>
+    <string name="ring">Ring</string>
+    <string name="select_mute_type">Select Mute Type</string>
+    <string name="tap_to_mute_manually">Tap to Mute manually</string>
 </resources>

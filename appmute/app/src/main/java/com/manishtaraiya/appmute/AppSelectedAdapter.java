@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,9 +73,11 @@ public class AppSelectedAdapter extends RecyclerView.Adapter<AppSelectedAdapter.
 
            RequestOptions options = new RequestOptions()
                    .fitCenter();
-           //.placeholder(R.drawable.placeholder)
+          // .placeholder(R.drawable.placeholder)
            //.error(R.drawable.placeholder);
-           Glide.with(context).load(pm.getApplicationIcon(applicationInfo)).apply(options).into(holder.appIcon);
+           Drawable drawable = pm.getApplicationIcon(applicationInfo);
+
+           Glide.with(context).load(drawable).apply(options).into(holder.appIcon);
 
            holder.appSelectedLayout.setOnClickListener(new View.OnClickListener() {
                @Override

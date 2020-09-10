@@ -2,11 +2,14 @@ package com.manishtaraiya.appmute;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.text.TextUtils;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -25,6 +28,15 @@ public class Utils {
     public static final String isToastEnableKey = "is_toast_enable";
     public static final String isAutoMuteEnableKey = "is_auto_mute_enable";
     public static final String statusWidgetMuteButtonKey = "status_widget_mute_button";
+    public static final String isTriggeredFromWidget= "is_triggered_from_mute_widget";
+
+    public static final String ringRadioButtonKey = "ring_radio_button_key";
+    public static final String notificationRadioButtonKey = "notification_radio_button_key";
+    public static final String systemRadioButtonKey = "system_radio_button_key";
+    public static final String alarmRadioButtonKey = "alarm_radio_button_key";
+    public static final String musicRadioButtonKey = "music_radio_button_key";
+
+
 
     private  ProgressDialog mProgressDialog;
 
@@ -110,5 +122,72 @@ public class Utils {
                 v.vibrate(50);
             }
         }
+    }
+
+    public static void showAlertDialog(Context context, String title, String message)
+    {
+        // Create the object of
+        // AlertDialog Builder class
+        AlertDialog.Builder builder
+                = new AlertDialog
+                .Builder(context);
+
+        // Set the message show for the Alert time
+        builder.setMessage(message);
+
+        // Set Alert Title
+        builder.setTitle(title);
+
+        // Set Cancelable false
+        // for when the user clicks on the outside
+        // the Dialog Box then it will remain show
+        builder.setCancelable(true);
+
+        // Set the positive button with yes name
+        // OnClickListener method is use of
+        // DialogInterface interface.
+
+        builder
+                .setPositiveButton(
+                        "Ok",
+                        new DialogInterface
+                                .OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which)
+                            {
+
+                                // When the user click yes button
+                                // then app will close
+                                dialog.cancel();
+                            }
+                        });
+
+//        // Set the Negative button with No name
+//        // OnClickListener method is use
+//        // of DialogInterface interface.
+//        builder
+//                .setNegativeButton(
+//                        "No",
+//                        new DialogInterface
+//                                .OnClickListener() {
+//
+//                            @Override
+//                            public void onClick(DialogInterface dialog,
+//                                                int which)
+//                            {
+//
+//                                // If user click no
+//                                // then dialog box is canceled.
+//                                dialog.cancel();
+//                            }
+//                        });
+
+        // Create the Alert dialog
+        AlertDialog alertDialog = builder.create();
+
+        // Show the Alert Dialog box
+        alertDialog.show();
     }
 }

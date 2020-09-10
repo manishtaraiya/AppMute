@@ -6,21 +6,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RemoteViews;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.material.snackbar.Snackbar;
 
 /**
- * Implementation of App Widget functionality.
+ * Implementation of AppMuteWidget functionality.
  */
 public class AppMuteWidget extends AppWidgetProvider {
 
@@ -31,25 +23,27 @@ public class AppMuteWidget extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 
-        Log.v(TAG, "***** onUpdate");
+        Log.v(TAG, "onUpdate");
 
         Intent intent = new Intent(context, AppMuteWidget.class);
         intent.setAction(CLICK_ACTION);
+        //PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_mute_widget);
         views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
 
-        boolean isWidgetMute = sharePreference.get_data_boolean(context,Utils.statusWidgetMuteButtonKey,false);
-        if(isWidgetMute){
+        boolean isWidgetMute = sharePreference.get_data_boolean(context, Utils.statusWidgetMuteButtonKey, false);
+        sharePreference.set_data_boolean(context, Utils.isTriggeredFromWidget, isWidgetMute);
+        if (isWidgetMute) {
             new SetMasterMute().setMasterMute(true, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
-        }else {
+        } else {
             new SetMasterMute().setMasterMute(false, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
         }
-        sharePreference.set_data_boolean(context,Utils.statusManualMuteButtonKey,isWidgetMute);
+        sharePreference.set_data_boolean(context, Utils.statusManualMuteButtonKey, isWidgetMute);
 
         /* here you "refresh" the pending intent for the button */
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -63,18 +57,16 @@ public class AppMuteWidget extends AppWidgetProvider {
         super.onReceive(context, intent);
         String action = intent.getAction();
 
-        if (TextUtils.equals(action,CLICK_ACTION)) {
-            //Toast.makeText(context, "Hello", Toast.LENGTH_SHORT).show();
-            boolean isWidgetMute = sharePreference.get_data_boolean(context,Utils.statusWidgetMuteButtonKey,false);
-            changeWidgetState(context,!isWidgetMute);
-            sharePreference.set_data_boolean(context,Utils.statusWidgetMuteButtonKey,!isWidgetMute);
+        if (TextUtils.equals(action, CLICK_ACTION)) {
+            boolean isWidgetMute = sharePreference.get_data_boolean(context, Utils.statusWidgetMuteButtonKey, false);
+            changeWidgetState(context, !isWidgetMute);
+            sharePreference.set_data_boolean(context, Utils.statusWidgetMuteButtonKey, !isWidgetMute);
 
         }
     }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
@@ -82,43 +74,43 @@ public class AppMuteWidget extends AppWidgetProvider {
 
     @Override
     public void onEnabled(Context context) {
-        // Enter relevant functionality for when the first widget is created
-        Log.v(TAG, "***** onEnable");
-        boolean isWidgetMute = sharePreference.get_data_boolean(context,Utils.statusWidgetMuteButtonKey,false);
-        changeWidgetState(context,isWidgetMute);
+        Log.v(TAG, "onEnable");
+        boolean isWidgetMute = sharePreference.get_data_boolean(context, Utils.statusWidgetMuteButtonKey, false);
+        changeWidgetState(context, isWidgetMute);
 
     }
 
     @Override
     public void onDisabled(Context context) {
-        // Enter relevant functionality for when the last widget is disabled
-        Log.v(TAG, "***** onDisable");
+        Log.v(TAG, "onDisable");
     }
 
-    private void changeWidgetState(Context context ,boolean state ){
+    private void changeWidgetState(Context context, boolean state) {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.app_mute_widget);
 
         Utils.vibrate(context);
 
-        if(state){
-            //Toast.makeText(context,"Mute All ON",Toast.LENGTH_SHORT).show();
+
+        if (state) {
+            sharePreference.set_data_boolean(context, Utils.isTriggeredFromWidget, true);
             new SetMasterMute().setMasterMute(true, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.GONE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.VISIBLE);
-        }else {
-            //Toast.makeText(context,"Mute All OFF",Toast.LENGTH_SHORT).show();
+        } else {
             new SetMasterMute().setMasterMute(false, context);
             views.setViewVisibility(R.id.widget_image_on_layout, View.VISIBLE);
             views.setViewVisibility(R.id.widget_image_off_layout, View.GONE);
+            sharePreference.set_data_boolean(context, Utils.isTriggeredFromWidget, false);
         }
 
-        sharePreference.set_data_boolean(context,Utils.statusManualMuteButtonKey,state);
+        sharePreference.set_data_boolean(context, Utils.statusManualMuteButtonKey, state);
 
         Intent intent = new Intent(context, AppMuteWidget.class);
-
         intent.setAction(CLICK_ACTION);
+        //PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
 
