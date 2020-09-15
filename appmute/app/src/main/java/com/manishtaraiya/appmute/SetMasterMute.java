@@ -28,52 +28,33 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 public class SetMasterMute {
     private MySharePreference mySharePreference = new MySharePreference();
 
+    /*@SuppressLint({"UseValueOf"})
+    public void setMasterMute(boolean flag, Context context) {
+        mySharePreference.set_data_boolean(context, Utils.isInMuteModeKey, flag);
+
+        appNotification(context, flag);
+        setMasterMute(flag,context);
+    }*/
+
+
     @SuppressLint({"UseValueOf"})
     public void setMasterMute(boolean flag, Context context) {
         mySharePreference.set_data_boolean(context, Utils.isInMuteModeKey, flag);
         AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         appNotification(context, flag);
-        MuteAudio(flag,context);
-    }
 
-
-    public void MuteAudio(boolean muteState , Context context){
-        AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        boolean isWidgetMute = mySharePreference.get_data_boolean(context, Utils.isTriggeredFromWidget, false);
-        boolean music = mySharePreference.get_data_boolean(context,Utils.musicRadioButtonKey,true);
-        boolean notification = mySharePreference.get_data_boolean(context,Utils.notificationRadioButtonKey,true);
-        boolean alarm = mySharePreference.get_data_boolean(context,Utils.alarmRadioButtonKey,true);
-        boolean ring = mySharePreference.get_data_boolean(context,Utils.ringRadioButtonKey,true);
-        boolean system = mySharePreference.get_data_boolean(context,Utils.systemRadioButtonKey,true);
-
-        if(muteState) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(notification || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
-                if(alarm || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_ALARM, AudioManager.ADJUST_MUTE, 0);
-                if(music || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-                if(ring || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_MUTE, 0);
-                if(system || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_MUTE, 0);
-            } else {
-                if(notification || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_NOTIFICATION, true);
-                if(alarm || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_ALARM, true);
-                if(music || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-                if(ring || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_RING, true);
-                if(system || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_SYSTEM, true);
-            }
-        }else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(notification || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0);
-                if(alarm || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_ALARM, AudioManager.ADJUST_UNMUTE, 0);
-                if(music || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
-                if(ring || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_UNMUTE, 0);
-                if(system || isWidgetMute) mAudioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_UNMUTE, 0);
-            } else {
-                if(notification || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_NOTIFICATION, false);
-                if(alarm || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_ALARM, false);
-                if(music || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-                if(ring || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_RING, false);
-                if(system || isWidgetMute) mAudioManager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
-            }
+        try {
+            assert mAudioManager != null;
+            Method obj = mAudioManager.getClass().getMethod("setMasterMute", Boolean.TYPE, Integer.TYPE);
+            Boolean obj1 = flag;
+            Integer obj2 = 0;
+            obj.invoke(mAudioManager, obj1, obj2);
+        } catch (NoSuchMethodException nosuchmethodexception) {
+            nosuchmethodexception.printStackTrace();
+        } catch (InvocationTargetException invocationtargetexception) {
+            invocationtargetexception.printStackTrace();
+        } catch (IllegalAccessException illegalaccessexception) {
+            illegalaccessexception.printStackTrace();
         }
     }
 

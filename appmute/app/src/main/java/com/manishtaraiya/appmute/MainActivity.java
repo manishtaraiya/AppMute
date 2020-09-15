@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     //LinearLayout appListInfoLayout;
     RecyclerView appSelectionRecycleView;
     LinearLayout muteNotificationLayout, enableAutoMuteLayout;
-    CheckBox ringCheckBox, alarmCheckBox, systemCheckBox, musicCheckBox, notificationCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,23 +202,6 @@ public class MainActivity extends AppCompatActivity {
         muteNotificationLayout = findViewById(R.id.muteNotificationLayout);
         enableAutoMuteLayout = findViewById(R.id.enableAutoMuteLayout);
 
-        ringCheckBox = findViewById(R.id.ringRadio);
-        ringCheckBox.setOnCheckedChangeListener(checkedChangeListener);
-
-        systemCheckBox = findViewById(R.id.systemRadio);
-        systemCheckBox.setOnCheckedChangeListener(checkedChangeListener);
-
-        notificationCheckBox = findViewById(R.id.notificationRadio);
-        notificationCheckBox.setOnCheckedChangeListener(checkedChangeListener);
-
-        musicCheckBox = findViewById(R.id.musicRadio);
-        musicCheckBox.setOnCheckedChangeListener(checkedChangeListener);
-
-        alarmCheckBox = findViewById(R.id.alarmRadio);
-        alarmCheckBox.setOnCheckedChangeListener(checkedChangeListener);
-        updateRadioButton();
-
-
         toastSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -331,91 +313,4 @@ public class MainActivity extends AppCompatActivity {
             //e.toString();
         }
     }
-
-    private void updateRadioButton() {
-        boolean status = false;
-        status = sharePreference.get_data_boolean(this, Utils.ringRadioButtonKey, true);
-        ringCheckBox.setChecked(status);
-        status = sharePreference.get_data_boolean(this, Utils.notificationRadioButtonKey, true);
-        notificationCheckBox.setChecked(status);
-        status = sharePreference.get_data_boolean(this, Utils.systemRadioButtonKey, true);
-        systemCheckBox.setChecked(status);
-        status = sharePreference.get_data_boolean(this, Utils.alarmRadioButtonKey, true);
-        alarmCheckBox.setChecked(status);
-        status = sharePreference.get_data_boolean(this, Utils.musicRadioButtonKey, true);
-        musicCheckBox.setChecked(status);
-    }
-
-    private int getRadioEnabledCount() {
-        boolean status = false;
-        int count = 0;
-        status = sharePreference.get_data_boolean(this, Utils.ringRadioButtonKey, true);
-        if (status) count++;
-        status = sharePreference.get_data_boolean(this, Utils.notificationRadioButtonKey, true);
-        if (status) count++;
-        status = sharePreference.get_data_boolean(this, Utils.systemRadioButtonKey, true);
-        if (status) count++;
-        status = sharePreference.get_data_boolean(this, Utils.alarmRadioButtonKey, true);
-        if (status) count++;
-        status = sharePreference.get_data_boolean(this, Utils.musicRadioButtonKey, true);
-        if (status) count++;
-        return count;
-
-    }
-
-
-
-    private CompoundButton.OnCheckedChangeListener checkedChangeListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton compoundButton, boolean status) {
-            boolean changeBack = false;
-            if(!status && getRadioEnabledCount() <=1)
-            {
-                Utils.showAlertDialog(MainActivity.this,"Alert !","Please select at least 1 mute type");
-                changeBack = true;
-            }
-            switch (compoundButton.getId()) {
-                case R.id.ringRadio:
-                    if(changeBack){
-                        ringCheckBox.setChecked(true);
-                    }else {
-                        sharePreference.set_data_boolean(MainActivity.this, Utils.ringRadioButtonKey, status);
-                    }
-                    break;
-
-                case R.id.notificationRadio:
-                    if(changeBack){
-                        notificationCheckBox.setChecked(true);
-                    }else {
-                        sharePreference.set_data_boolean(MainActivity.this, Utils.notificationRadioButtonKey, status);
-                    }
-                    break;
-
-                case R.id.systemRadio:
-                    if(changeBack){
-                        systemCheckBox.setChecked(true);
-                    }else {
-                        sharePreference.set_data_boolean(MainActivity.this, Utils.systemRadioButtonKey, status);
-                    }
-                    break;
-
-                case R.id.alarmRadio:
-                    if(changeBack){
-                        alarmCheckBox.setChecked(true);
-                    }else {
-                        sharePreference.set_data_boolean(MainActivity.this, Utils.alarmRadioButtonKey, status);
-                    }
-                    break;
-                case R.id.musicRadio:
-                    if(changeBack){
-                        musicCheckBox.setChecked(true);
-                    }else {
-                        sharePreference.set_data_boolean(MainActivity.this, Utils.musicRadioButtonKey, status);
-                    }
-                    break;
-            }
-        }
-    };
-
-
 }

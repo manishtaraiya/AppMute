@@ -27,6 +27,7 @@ public class AppMute extends AccessibilityService {
 
     MySharePreference sharePreference = new MySharePreference();
     private long lastTimestamp = 0;
+    private long exitTimeStamp = 0;
 
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
@@ -80,6 +81,7 @@ public class AppMute extends AccessibilityService {
                         }
                         if (isToastEnabled && !isInMuteMode && allowToast) {
                             Toast.makeText(getApplicationContext(), "Automatic Mute Enabled for " + pm.getApplicationLabel(appInfo), Toast.LENGTH_SHORT).show();
+                            exitTimeStamp = System.currentTimeMillis();
                         }
                         if (!isInMuteMode) {
                             new SetMasterMute().setMasterMute(true, this);
@@ -95,12 +97,11 @@ public class AppMute extends AccessibilityService {
             if (isToastEnabled && isInMuteMode) {
 
                 timestamp = System.currentTimeMillis();
-                if (timestamp - lastTimestamp > 1000) {
-                    allowToast = true;
-                    lastTimestamp = timestamp;
-                }
-                if (allowToast)
+                if (exitTimeStamp >0 && (timestamp - exitTimeStamp > 1000)) {
+                    exitTimeStamp = 0;
                     Toast.makeText(getApplicationContext(), "Automatic Mute Disabled ", Toast.LENGTH_SHORT).show();
+
+                }
             }
         }
 
